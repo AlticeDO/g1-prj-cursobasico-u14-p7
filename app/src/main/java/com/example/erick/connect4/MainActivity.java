@@ -1,5 +1,7 @@
 package com.example.erick.connect4;
 
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +13,10 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private int dashboard[][] = new int[7][6];
+    private int player1;
+    private int player2;
+
+    private byte playerTurn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,54 +29,54 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.col5).setOnClickListener(this);
         findViewById(R.id.col6).setOnClickListener(this);
         findViewById(R.id.col7).setOnClickListener(this);
+
+        player1 = getResources()
+                .getIdentifier("red", "drawable", getPackageName());
+        player2 = getResources()
+                .getIdentifier("yellow", "drawable", getPackageName());
+        playerTurn = 1;
     }
 
     @Override
     public void onClick(View v) {
-        boolean refresh = false;
 
         switch (v.getId()) {
         case R.id.col1:
-            Toast.makeText(this, "col1", Toast.LENGTH_SHORT).show();
-            refresh = true;
-            setPieceInColumn(1, 1);
+            setPieceInColumn(1, playerTurn);
             break;
         case R.id.col2:
-            Toast.makeText(this, "col2", Toast.LENGTH_SHORT).show();
-            refresh = true;
-            setPieceInColumn(2, 1);
+            setPieceInColumn(2, playerTurn);
             break;
         case R.id.col3:
-            Toast.makeText(this, "col3", Toast.LENGTH_SHORT).show();
-            refresh = true;
-            setPieceInColumn(3, 1);
+            setPieceInColumn(3, playerTurn);
             break;
         case R.id.col4:
-            Toast.makeText(this, "col4", Toast.LENGTH_SHORT).show();
-            refresh = true;
-            setPieceInColumn(4, 1);
+            setPieceInColumn(4, playerTurn);
             break;
         case R.id.col5:
-            Toast.makeText(this, "col5", Toast.LENGTH_SHORT).show();
-            refresh = true;
-            setPieceInColumn(5, 1);
+            setPieceInColumn(5, playerTurn);
             break;
         case R.id.col6:
-            refresh = true;
-            setPieceInColumn(6, 1);
-            Toast.makeText(this, "col6", Toast.LENGTH_SHORT).show();
+            setPieceInColumn(6, playerTurn);
             break;
         case R.id.col7:
-            refresh = true;
-            setPieceInColumn(7, 1);
-            Toast.makeText(this, "col7", Toast.LENGTH_SHORT).show();
-//            ((ImageView) ((TableRow) findViewById(R.id.row6)).getChildAt(6)).setImageResource(R.drawable.red);
+            setPieceInColumn(7, playerTurn);
             break;
         }
+
+        togglePlayer();
     }
 
     public int checkWinner() {
+//        int winner;
+//        int count = 0;
+//
+//        for(int x = dashboard.length - 1; x > 0; x--) {
+//
+//        }
         return -1;
+
+
     }
 
     public boolean setPieceInColumn(int col, int player) {
@@ -95,11 +101,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void updateDashboard(int x, int y, int player) {
 
         if (player == 1) {
-            player = getResources().getIdentifier(getPackageName() + ":drawable/red", null, null);
+            player = player1;
         } else {
-            player = getResources().getIdentifier(getPackageName() + ":drawable/yellow", null, null);
+            player = player2;
         }
 
         ((ImageView) ((TableRow) ((TableLayout) findViewById(R.id.dashboard)).getChildAt(y)).getChildAt(x)).setImageResource(player);
+    }
+
+    private void togglePlayer() {
+        if (playerTurn == 1) {
+            playerTurn = 2;
+        } else {
+            playerTurn = 1;
+        }
+        Toast.makeText(this, "Turno de: " + playerTurn, Toast.LENGTH_SHORT).show();
     }
 }
