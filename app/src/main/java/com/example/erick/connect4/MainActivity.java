@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mp = MediaPlayer.create(this, R.raw.bg);
         mp.setVolume(100, 100);
         mp.start();
+        mp.setLooping(true);
 
         player1 = getResources()
                 .getIdentifier("red", "drawable", getPackageName());
