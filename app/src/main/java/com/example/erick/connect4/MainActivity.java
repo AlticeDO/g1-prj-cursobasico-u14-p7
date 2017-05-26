@@ -64,19 +64,139 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             break;
         }
 
-        togglePlayer();
+        int winner = checkWinner();
+
+        if (winner > 0) {
+            Toast.makeText(this, "Ganador: Player " + winner, Toast.LENGTH_SHORT).show();
+        } else {
+            togglePlayer();
+        }
     }
 
     public int checkWinner() {
-//        int winner;
-//        int count = 0;
-//
-//        for(int x = dashboard.length - 1; x > 0; x--) {
-//
-//        }
+        int winner = -1;
+        int last = -1;
+        int count = 0;
+        int lastVertical = -1;
+        int countVertical = 0;
+        boolean firstTime = true;
+        boolean firstTimeVertical = true;
+
+        for(int z = dashboard.length - 1; z >= 0; z--) {
+            // Horizontal check
+            for (int y = dashboard[z].length - 1; y >= 0; y--) {
+                for (int x = dashboard.length - 1; x >= 0; x--) {
+                    if (firstTime && dashboard[x][y] != 0) {
+                        last = dashboard[x][y];
+                        firstTime = false;
+                    }
+
+                    if (dashboard[x][y] == last) {
+                        count++;
+                    } else {
+                        if (dashboard[x][y] != 0) {
+                            count = 1;
+                            last = dashboard[x][y];
+                        } else {
+                            count = 0;
+                            last = -1;
+                        }
+                    }
+
+                    if (count == 4) {
+                        winner = dashboard[x][y];
+                        return winner;
+                    }
+
+                    if (dashboard[x][y] != 0) {
+                        winner = getDiagonalWinner(x, y, dashboard[x][y]);
+                        if (winner > 0) {
+                            return winner;
+                        }
+                    }
+                }
+
+                // Vertical check
+                if (firstTimeVertical && dashboard[z][y] != 0) {
+                    lastVertical = dashboard[z][y];
+                    firstTimeVertical = false;
+                }
+
+                if (dashboard[z][y] == lastVertical) {
+                    countVertical++;
+                } else {
+                    if (dashboard[z][y] != 0) {
+                        countVertical = 1;
+                        lastVertical = dashboard[z][y];
+                    } else {
+                        countVertical = 0;
+                        lastVertical = -1;
+                    }
+                }
+
+                if (countVertical == 4) {
+                    winner = dashboard[z][y];
+                    return winner;
+                }
+            }
+        }
+        return winner > 0 ? winner : -1;
+    }
+
+    private int getDiagonalWinner(int startX, int startY, int player) {
+
+        int y = startY;
+        int count = 1;
+
+        // If x or y is less than 4 isn't possible
+        if (startY < 3 )  {
+            return -1;
+        }
+
+        // Check left diagonal
+        if (startX > 0) {
+            for (int x = startX - 1; x >= 0; x--) {
+                y--;
+                if (y < 0) {
+                    break;
+                }
+                if (dashboard[x][y] == player) {
+                    count++;
+                } else {
+                    break;
+                }
+
+                if (count == 4) {
+                    return player;
+                }
+            }
+        }
+
+        count = 1;
+        y = startY;
+
+        // Check right diagonal
+        if (startX < dashboard.length - 1) {
+            for (int x = startX + 1; x < dashboard.length; x++) {
+                y--;
+
+                if (y < 0) {
+                    break;
+                }
+
+                if (dashboard[x][y] == player) {
+                    count++;
+                } else {
+                    break;
+                }
+
+                if (count == 4) {
+                    return player;
+                }
+            }
+        }
+
         return -1;
-
-
     }
 
     public boolean setPieceInColumn(int col, int player) {
@@ -115,6 +235,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             playerTurn = 1;
         }
-        Toast.makeText(this, "Turno de: " + playerTurn, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "Turno de: " + playerTurn, Toast.LENGTH_SHORT).show();
     }
 }
