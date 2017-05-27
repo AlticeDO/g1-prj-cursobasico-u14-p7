@@ -1,15 +1,10 @@
 package com.example.erick.connect4;
 
 import android.content.DialogInterface;
-import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.media.MediaPlayer;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TableLayout;
@@ -125,13 +120,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         case R.id.txtSound:
             if (isMute) {
-                isMute = !isMute;
+                isMute = false;
                 txtSound.setImageResource(mute);
                 mp.reset();
                 mp = MediaPlayer.create(this, R.raw.bg);
                 mp.start();
             } else {
-                isMute = !isMute;
+                isMute = true;
                 txtSound.setImageResource(sound);
                 mp.stop();
             }
@@ -314,19 +309,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return -1;
     }
 
-    public boolean setPieceInColumn(int col, int player) {
+    public boolean setPieceInColumn(int x, int player) {
         if (gameOver) {
             return false;
         }
         
         boolean changed = false;
-        col--;
+        x--;
         try {
-            for (int x = 5; x >= 0; x--) {
+            for (int y = 5; y >= 0; y--) {
 
-                if (dashboard[col][x] == 0) {
-                    dashboard[col][x] = player;
-                    updateDashboard(col, x, player);
+                if (dashboard[x][y] == 0) {
+                    dashboard[x][y] = player;
+                    updateDashboard(x, y, player);
                     changed = true;
                     break;
                 }
@@ -359,18 +354,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void togglePlayer() {
         if (playerTurn == 1) {
             playerTurn = 2;
-            ((TextView) findViewById(R.id.txtPlayer)).setText("Jugador 2");
+            ((TextView) findViewById(R.id.txtPlayer)).setText(R.string.player2);
         } else {
             playerTurn = 1;
-            ((TextView) findViewById(R.id.txtPlayer)).setText("Jugador 1");
+            ((TextView) findViewById(R.id.txtPlayer)).setText(R.string.player1);
         }
     }
 
     private void setPlayer(int player) {
         if (player == 1) {
-            ((TextView) findViewById(R.id.txtPlayer)).setText("Jugador 1");
+            ((TextView) findViewById(R.id.txtPlayer)).setText(getString(R.string.player1));
         } else {
-            ((TextView) findViewById(R.id.txtPlayer)).setText("Jugador 2");
+            ((TextView) findViewById(R.id.txtPlayer)).setText(R.string.player2);
         }
     }
 }
