@@ -1,8 +1,12 @@
 package com.example.erick.connect4;
 
+import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.media.MediaPlayer;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,15 +14,23 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private int dashboard[][] = new int[7][6];
+    private int player0;
     private int player1;
     private int player2;
+    private int mute;
+    private int sound;
+    private ImageView txtSound;
     private MediaPlayer mp;
+    private boolean gameOver = false;
+    private int winner = 0;
+    private boolean isMute = false;
 
-    private byte playerTurn;
+    private int playerTurn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,16 +43,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.col5).setOnClickListener(this);
         findViewById(R.id.col6).setOnClickListener(this);
         findViewById(R.id.col7).setOnClickListener(this);
+        findViewById(R.id.txtReset).setOnClickListener(this);
+        txtSound = (ImageView) findViewById(R.id.txtSound);
+        txtSound.setOnClickListener(this);
 
         mp = MediaPlayer.create(this, R.raw.bg);
-        mp.setVolume(100, 100);
+        mp.setVolume(50, 50);
         mp.start();
         mp.setLooping(true);
 
+        player0 = getResources()
+                .getIdentifier("white", "drawable", getPackageName());
         player1 = getResources()
                 .getIdentifier("red", "drawable", getPackageName());
         player2 = getResources()
                 .getIdentifier("yellow", "drawable", getPackageName());
+        sound = getResources()
+                .getIdentifier("sound", "drawable", getPackageName());
+        mute = getResources()
+                .getIdentifier("mute", "drawable", getPackageName());
         playerTurn = 1;
     }
 
@@ -58,38 +79,113 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
+        boolean updated = false;
 
         switch (v.getId()) {
         case R.id.col1:
-            setPieceInColumn(1, playerTurn);
+            updated = setPieceInColumn(1, playerTurn);
             break;
         case R.id.col2:
-            setPieceInColumn(2, playerTurn);
+            updated = setPieceInColumn(2, playerTurn);
             break;
         case R.id.col3:
-            setPieceInColumn(3, playerTurn);
+            updated = setPieceInColumn(3, playerTurn);
             break;
         case R.id.col4:
-            setPieceInColumn(4, playerTurn);
+            updated = setPieceInColumn(4, playerTurn);
             break;
         case R.id.col5:
-            setPieceInColumn(5, playerTurn);
+            updated = setPieceInColumn(5, playerTurn);
             break;
         case R.id.col6:
-            setPieceInColumn(6, playerTurn);
+            updated = setPieceInColumn(6, playerTurn);
             break;
         case R.id.col7:
-            setPieceInColumn(7, playerTurn);
+            updated = setPieceInColumn(7, playerTurn);
             break;
+        case R.id.txtReset:
+            if (gameOver) {
+                resetGame(winner);
+            } else {
+                new AlertDialog.Builder(this)
+                        .setTitle("Confirmar")
+                        .setMessage("¿Esta seguro que quiere reiniciar la partida?")
+                        .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                resetGame();
+                            }
+                        }).setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                }).create().show();
+            }
+            return;
+        case R.id.txtSound:
+            if (isMute) {
+                isMute = !isMute;
+                txtSound.setImageResource(mute);
+                mp.reset();
+                mp = MediaPlayer.create(this, R.raw.bg);
+                mp.start();
+            } else {
+                isMute = !isMute;
+                txtSound.setImageResource(sound);
+                mp.stop();
+            }
+            return;
         }
 
-        int winner = checkWinner();
+        if (updated) {
+            winner = checkWinner();
 
-        if (winner > 0) {
-            Toast.makeText(this, "Ganador: Player " + winner, Toast.LENGTH_SHORT).show();
+            if (winner > 0) {
+                if (!isMute) {
+                    mp.stop();
+                    mp = MediaPlayer.create(this, R.raw.tada);
+                    mp.start();
+                }
+                playerTurn = winner;
+                Toast.makeText(this, "Ganador: Jugador " + winner, Toast.LENGTH_SHORT).show();
+                gameOver = true;
+            } else {
+                togglePlayer();
+            }
         } else {
-            togglePlayer();
+            if (gameOver) {
+                Toast.makeText(this, "El juego ha finalizado", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Esta columna esta llena", Toast.LENGTH_SHORT).show();
+            }
         }
+    }
+
+    private void resetGame() {
+        dashboard = new int[7][6];
+        for(int x = 0; x < dashboard.length; x++) {
+            for(int y = 0; y < dashboard[x].length; y++) {
+                updateDashboard(x, y, 0);
+            }
+        }
+
+        playerTurn = 1;
+        mp.reset();
+        if (!isMute) {
+            mp = MediaPlayer.create(this, R.raw.bg);
+            mp.start();
+            mp.setLooping(true);
+        }
+        gameOver = false;
+        Toast.makeText(this, "Juego reiniciado", Toast.LENGTH_SHORT).show();
+        setPlayer(playerTurn);
+    }
+
+    private void resetGame(int player) {
+        resetGame();
+        playerTurn = player;
+        setPlayer(player);
     }
 
     public int checkWinner() {
@@ -219,6 +315,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public boolean setPieceInColumn(int col, int player) {
+        if (gameOver) {
+            return false;
+        }
+        
         boolean changed = false;
         col--;
         try {
@@ -241,19 +341,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (player == 1) {
             player = player1;
-        } else {
+        } else if (player == 2) {
             player = player2;
+        } else {
+            player = player0;
         }
 
-        ((ImageView) ((TableRow) ((TableLayout) findViewById(R.id.dashboard)).getChildAt(y)).getChildAt(x)).setImageResource(player);
+        (
+                (ImageView) (
+                        (TableRow) (
+                                (TableLayout) findViewById(R.id.dashboard)
+                        ).getChildAt(y)
+                ).getChildAt(x)
+        ).setImageResource(player);
     }
 
     private void togglePlayer() {
         if (playerTurn == 1) {
             playerTurn = 2;
+            ((TextView) findViewById(R.id.txtPlayer)).setText("Jugador 2");
         } else {
             playerTurn = 1;
+            ((TextView) findViewById(R.id.txtPlayer)).setText("Jugador 1");
         }
-        //Toast.makeText(this, "Turno de: " + playerTurn, Toast.LENGTH_SHORT).show();
+    }
+
+    private void setPlayer(int player) {
+        if (player == 1) {
+            ((TextView) findViewById(R.id.txtPlayer)).setText("Jugador 1");
+        } else {
+            ((TextView) findViewById(R.id.txtPlayer)).setText("Jugador 2");
+        }
     }
 }
